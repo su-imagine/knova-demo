@@ -8,6 +8,7 @@
 <script>
 // import videoDemo from './components/video-demo.vue'
 import konvaDemo from './components/konva-demo.vue'
+// import konvaDemo from './components/demo2.vue'
 export default {
   name: 'App',
   components: {

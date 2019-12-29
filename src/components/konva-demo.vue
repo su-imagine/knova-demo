@@ -93,15 +93,13 @@ export default {
 				// 点击过快则为双击
 				if(this.clickTag === 0) {
 					this.clickTag = 1
+					this.shapeConfig.path.push([x,y])
 					setTimeout(() => {
 						this.clickTag = 0
 					},500)
 				}else{
 					this.dbCickFlag = true
 				}
-
-				this.shapeConfig.path.push([x,y])
-
 				this.drawFence()
 
 			})
@@ -129,7 +127,7 @@ export default {
 			tempPath.map(item => {
 				if(path.length === 0){
 					path.push(item)
-				}else if(!path.find(p => p[0] === item[0] && p[1] === item[1])){
+				}else if(!path.find(p => p[0] === item[0] && p[1] === item[1])){  // 没有去重
 					path.push(item)
 				}
 			})
@@ -140,15 +138,22 @@ export default {
 			// 画端点
 
 			let dotArr = []
-			path.map(item => {
+			path.map((item,index) => {
+				if(path.length < 3 ){
+					return
+				}
+				if(item[0] === path[0][0] && item[1] === path[1]){
+					return
+				}
 				let dot = new Konva.Circle({
 					x: item[0],
 				    y: item[1],
 				    radius: 4,
 				    fill: 'rgb(255,255,255)',
 				    stroke: 'green',
-				    strokeWidth: 1,
-				    draggable:true
+					strokeWidth: 1,
+					name:'circle',
+				    // draggable:true
 				})
 				dotArr.push(dot)
 				this.circleArr.push(dot)
@@ -173,42 +178,118 @@ export default {
     			draggable:true
 			})
 
-
-			const transformer = new Konva.Transformer()
-
-
 			this.shapeLayer.destroyChildren()
 
-			this.shapeLayer.add(transformer)
-			transformer.attachTo(ploygon)
-			dotArr.map(dot => {
-				transformer.attachTo(ploygon)
-			})
-
 			this.shapeLayer.add(ploygon)
+			
 			dotArr.map(dot => this.shapeLayer.add(dot))
 			this.shapeLayer.batchDraw()
 
 			if(this.dbCickFlag){
 				this.stage.removeEventListener('click')
 				this.stage.removeEventListener('mousemove')
+				if(!this.hasDone){
+					this.hasDone = true
+					console.log('11111111111111111111111111')
 
-				// this.stage.on('click',e => {
-				// 	console.log(e)
-				// 	console.log(this.shapeConfig.path)
-				// 	const ev = e.evt
-				// 	const path = this.shapeConfig.path
-				// 	let pointX = ev.clientX
-				// 	let pointY = ev.pointY
-				// 	const ev = e.evt
-				// 	this.shapeConfig.path[0][0] = ev.clientX
-				// 	this.shapeConfig.path[0][1] = ev.clientY - 50
-				// })
+					this.stage.on('mouseup',e => {
+						this.stage.removeEventListener('mousemove')
+					})
 
-				// this.stage.on('mousemove',e => {
-				// 	const ev = e.evt
-				// })
-			}
+					this.stage.on('mousedown',e => {
+						let target = e.target
+						if(target.attrs.name === 'circle'){
+							let circleArr = this.stage.find('Circle')
+							let ind = circleArr.findIndex((circle,index) => {
+								return circle._id === target._id
+							})
+							this.stage.on('mousemove',e => {
+								let ev = e.evt
+								let x = ev.clientX
+								let y = ev.clientY - 50
+								// this.shapeConfig.path.shift()
+								if(ind == 0){
+									// this.shapeConfig.path.splice(this.shapeConfig.path.length-1,1,[x,y])
+									this.shapeConfig.path[this.shapeConfig.path.length - 1] = [x,y]
+								}
+								// this.shapeConfig.path.splice(ind,1,[x,y])
+								this.shapeConfig.path[ind] = [x,y]
+
+								// console.log(x)
+								// console.log(y)
+								this.reDrawFence()
+							})
+						}
+					})
+				}
+			}			
+		},
+		reDrawFence(){
+			console.log(this.shapeConfig)
+
+			const { shapeConfig } = this
+			let tempPath = []
+			let path = []
+			tempPath = [...shapeConfig.path,[shapeConfig.endX,shapeConfig.endY]]
+
+			tempPath.map(item => {
+				if(path.length === 0){
+					path.push(item)
+				}else if(!path.find(p => p[0] === item[0] && p[1] === item[1])){  // 没有去重
+					path.push(item)
+				}
+			})
+
+			path.push(path[0])  // 首尾相连
+
+
+			// 画端点
+
+			let dotArr = []
+			path.map((item,index) => {
+				if(path.length < 3 ){
+					return
+				}
+				let dot = new Konva.Circle({
+					x: item[0],
+				    y: item[1],
+				    radius: 4,
+				    fill: 'rgb(255,255,255)',
+				    stroke: 'green',
+					strokeWidth: 1,
+					name:'circle',
+				    // draggable:true
+				})
+				dotArr.push(dot)
+				this.circleArr.push(dot)
+			})
+
+			let ploygon = new Konva.Shape({
+				sceneFunc:(context,shape) => {
+					context.beginPath()
+					path.map((item,index) => {
+						if(index === 0){
+							context.moveTo(item[0],item[1])
+						}else{
+							context.lineTo(item[0],item[1])
+						}
+					})
+					context.closePath()
+					context.fillStrokeShape(shape)
+				},
+				fill: 'rgba(0, 132, 255, 0.2)',
+    			stroke: '#4C98FF',
+    			strokeWidth: 2,
+    			draggable:true
+			})
+
+			this.shapeLayer.destroyChildren()
+
+			this.shapeLayer.add(ploygon)
+			
+			dotArr.map(dot => this.shapeLayer.add(dot))
+			this.shapeLayer.batchDraw()
+
 
 		}
 	},
