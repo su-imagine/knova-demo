@@ -132,14 +132,14 @@ export default {
 				}
 			})
 
-			path.push(path[0])  // 首尾相连
+			// path.push(path[0])  // 首尾相连
 
 
 			// 画端点
 
 			let dotArr = []
 			path.map((item,index) => {
-				if(path.length < 3 ){
+				if(path.length < 2 ){
 					return
 				}
 				if(item[0] === path[0][0] && item[1] === path[1]){
@@ -148,17 +148,15 @@ export default {
 				let dot = new Konva.Circle({
 					x: item[0],
 				    y: item[1],
-				    radius: 4,
+				    radius: 8,
 				    fill: 'rgb(255,255,255)',
 				    stroke: 'green',
 					strokeWidth: 1,
 					name:'circle',
-				    // draggable:true
 				})
 				dotArr.push(dot)
 				this.circleArr.push(dot)
 			})
-
 			let ploygon = new Konva.Shape({
 				sceneFunc:(context,shape) => {
 					context.beginPath()
@@ -190,8 +188,6 @@ export default {
 				this.stage.removeEventListener('mousemove')
 				if(!this.hasDone){
 					this.hasDone = true
-					console.log('11111111111111111111111111')
-
 					this.stage.on('mouseup',e => {
 						this.stage.removeEventListener('mousemove')
 					})
@@ -207,16 +203,7 @@ export default {
 								let ev = e.evt
 								let x = ev.clientX
 								let y = ev.clientY - 50
-								// this.shapeConfig.path.shift()
-								if(ind == 0){
-									// this.shapeConfig.path.splice(this.shapeConfig.path.length-1,1,[x,y])
-									this.shapeConfig.path[this.shapeConfig.path.length - 1] = [x,y]
-								}
-								// this.shapeConfig.path.splice(ind,1,[x,y])
 								this.shapeConfig.path[ind] = [x,y]
-
-								// console.log(x)
-								// console.log(y)
 								this.reDrawFence()
 							})
 						}
@@ -225,12 +212,11 @@ export default {
 			}			
 		},
 		reDrawFence(){
-			console.log(this.shapeConfig)
-
 			const { shapeConfig } = this
 			let tempPath = []
 			let path = []
-			tempPath = [...shapeConfig.path,[shapeConfig.endX,shapeConfig.endY]]
+			// tempPath = [...shapeConfig.path,[shapeConfig.endX,shapeConfig.endY]]
+			tempPath = [...shapeConfig.path]
 
 			tempPath.map(item => {
 				if(path.length === 0){
@@ -240,25 +226,24 @@ export default {
 				}
 			})
 
-			path.push(path[0])  // 首尾相连
+			// path.push(path[0])  // 首尾相连
 
 
 			// 画端点
 
 			let dotArr = []
 			path.map((item,index) => {
-				if(path.length < 3 ){
-					return
-				}
+				// if(path.length < 3 ){
+				// 	return
+				// }
 				let dot = new Konva.Circle({
 					x: item[0],
 				    y: item[1],
-				    radius: 4,
+				    radius: 8,
 				    fill: 'rgb(255,255,255)',
 				    stroke: 'green',
 					strokeWidth: 1,
 					name:'circle',
-				    // draggable:true
 				})
 				dotArr.push(dot)
 				this.circleArr.push(dot)
@@ -289,8 +274,6 @@ export default {
 			
 			dotArr.map(dot => this.shapeLayer.add(dot))
 			this.shapeLayer.batchDraw()
-
-
 		}
 	},
 	mounted(){
